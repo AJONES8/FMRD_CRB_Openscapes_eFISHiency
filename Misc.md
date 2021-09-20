@@ -9,5 +9,5 @@
 
 ## Sea creature jokes
 
-- **Q:** I just heard a really good joke about a giant squid
-- **A:** It's Kraken me up 
+- **1:** I just heard a really good joke about a giant squid
+- **2:** It's Kraken me up 
