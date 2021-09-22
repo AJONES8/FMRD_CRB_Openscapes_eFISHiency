@@ -14,5 +14,4 @@
 - Direction of the eFISHiency group
   - Black sea bass repo idea? (AM)
   - Paper idea? (AJ)
-  - Other group projects?
 - Other business
