@@ -3,6 +3,7 @@
 🐟📡📈
 
 9/23/2021
+12:00 PM EDT
 [Google Hangout Link](meet.google.com/pqv-rhba-kuo)
 
 ## Agenda ## 
