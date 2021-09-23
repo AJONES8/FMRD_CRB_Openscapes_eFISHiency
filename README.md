@@ -1,4 +1,4 @@
-## Information form the openscapes program for out team (eFISHiency)
+## Information form the openscapes program for our team (eFISHiency)
 
 🐟📡📈
 
