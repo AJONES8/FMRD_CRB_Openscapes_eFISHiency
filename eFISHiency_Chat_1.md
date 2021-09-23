@@ -16,6 +16,12 @@
   - [Doc](https://docs.google.com/document/d/16CZSVNZ4LvPiwkOthNRLIvh3NCnFlxsSv-6A3Kxl3kA/edit#)
 - Direction of the eFISHiency group
   - Black sea bass repo idea? (AM)
-  - Paper idea? (AJ)
+  -  Folder in repo for different TORs: 
+  -   TOR 1 ) Ecosystem and Climate
+  -   TOR 2) Fishery Data
+  -       Standardized CPUE (VTR, Observer, Study Fleet)
+  -       Stakeholder perspectives - quesiotn
+  - Paper idea? (AJ)  
+  -  Paper on using fishery dependent data - all different sources
   - Other group projects?
 - Other business
