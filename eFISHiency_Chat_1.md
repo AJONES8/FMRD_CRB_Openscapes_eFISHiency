@@ -20,7 +20,9 @@
   -   TOR 1 ) Ecosystem and Climate
   -   TOR 2) Fishery Data
   -       Standardized CPUE (VTR, Observer, Study Fleet)
-  -       Stakeholder perspectives - quesiotn
+  -       Stakeholder perspectives - question
+  -   TOR 3 ) Survey Data
+  -       VAST model
   - Paper idea? (AJ)  
   -  Paper on using fishery dependent data - all different sources
   - Other group projects?
