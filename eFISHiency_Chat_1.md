@@ -19,10 +19,10 @@
   -  Folder in repo for different TORs: 
   -   TOR 1 ) Ecosystem and Climate
   -   TOR 2) Fishery Data
-  -       Standardized CPUE (VTR, Observer, Study Fleet)
-  -       Stakeholder perspectives - question
+      - Standardized CPUE (VTR, Observer, Study Fleet)
+      - Stakeholder perspectives - question
   -   TOR 3 ) Survey Data
-  -       VAST model
+      - VAST model
   - Paper idea? (AJ)  
   -  Paper on using fishery dependent data - all different sources
   - Other group projects?
