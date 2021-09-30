@@ -15,7 +15,6 @@ Loading the many packages that are used somewhere in this script. This script ha
 library(tidyverse)
 library(lubridate) #dates
 library(MASS)
-library(sf)
 
 ```
 
