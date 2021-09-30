@@ -277,8 +277,8 @@ ASM_OB_CATCH_SUB_edit_cf <- ASM_OB_CATCH_SUB %>% dplyr::select(-SPECIES_ITIS) %>
 #Will be zero for hauls without BSB
 #changed hail column because no unit conversion
 ASM_OB_CATCH_SUB_edit_sum <- ASM_OB_CATCH_SUB_edit_cf %>%
-  mutate(BSB_KEPTWT = case_when(SPECIES_ITIS==	'172877' & CATDISP == '1' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
-         BSB_DISCARDTWT = case_when(SPECIES_ITIS==	'172877' & CATDISP == '0' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
+  mutate(BSB_KEPTWT = case_when(SPECIES_ITIS==	'167688' & CATDISP == '1' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
+         BSB_DISCARDTWT = case_when(SPECIES_ITIS==	'167688' & CATDISP == '0' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
          SUM_BSB_CATCH = BSB_KEPTWT + BSB_DISCARDTWT)
 
 #Adding a trip total  
@@ -347,8 +347,8 @@ pulled_data_edit_cf <- pulled_data_edit %>%
 #Will be zero for hauls without Atl BSB
 #changed hail column because no unit coversion
 pulled_data_cf_sum <-pulled_data_edit_cf %>%
-  mutate(BSB_KEPTWT = case_when(SPECIES_ITIS==	'172877' & DISPOSITION_CODE == '011' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
-         BSB_DISCARDTWT = case_when(SPECIES_ITIS==	'172877' & DISPOSITION_CODE == '100' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
+  mutate(BSB_KEPTWT = case_when(SPECIES_ITIS==	'167688' & DISPOSITION_CODE == '011' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
+         BSB_DISCARDTWT = case_when(SPECIES_ITIS==	'167688' & DISPOSITION_CODE == '100' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
          SUM_BSB_CATCH = BSB_KEPTWT + BSB_DISCARDTWT)
 
 #Adding a trip total  
