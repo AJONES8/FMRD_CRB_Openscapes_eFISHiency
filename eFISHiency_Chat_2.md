@@ -12,7 +12,7 @@
 - Discussion of the last Friday meeting.
 - Discuss questions related to data
 - Moving forward on the black sea bass idea
-      - Fishery data pulls, standardization, analyses
-      - Industry outreach
-      - VAST model
+  - Fishery data pulls, standardization, analyses
+  - Industry outreach
+  - VAST model
 - Other business
