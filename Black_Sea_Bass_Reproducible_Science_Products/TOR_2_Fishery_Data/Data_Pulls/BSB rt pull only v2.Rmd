@@ -1,8 +1,8 @@
 ---
 title: "BSB_pull_only"
 author: "Andy Jones"
-date: "09/30/2021"
-output: html_document
+date: "10/05/2021"
+output: github_document
 editor_options: 
   chunk_output_type: console
 ---
@@ -20,7 +20,7 @@ library(MASS)
 
 ##Setting up DB connection
 Setting up connections to SOLE and NOVA using ROracle. 
-```{r Setting up DB connection include=FALSE}
+```{r Setting up DB connection}
 #File path may need to change
 source('C:/Users/andrew.jones/Desktop/dbconnection_v1.R')
 
@@ -201,12 +201,12 @@ OBTRP <- dbGetQuery(con.nova, "select * from OBDBS.OBTRP")
 ASMTRP <- dbGetQuery(con.nova, "select * from OBDBS.ASMTRP")
 
 #ASM and OBS HAUL data for all gears
-#OBHAU <- dbGetQuery(con.nova, "select * from OBDBS.OBHAU where YEAR > 2018 and YEAR < 2020")
-#ASMHAU <- dbGetQuery(con.nova, "select * from OBDBS.ASMHAU where YEAR > 2018 and YEAR < 2020")
+OBHAU <- dbGetQuery(con.nova, "select * from OBDBS.OBHAU")
+ASMHAU <- dbGetQuery(con.nova, "select * from OBDBS.ASMHAU")
 
-#ASM and OBS haul data for trawl gear
-OBHAU <- dbGetQuery(con.nova, "select * from OBDBS.OBHAU where negear in('050','051','052','053','054','056','057','058','170','370')")
-ASMHAU <- dbGetQuery(con.nova, "select * from OBDBS.ASMHAU where negear in('050','051','052','053','054','056','057','058','170','370')")
+# #ASM and OBS haul data for trawl gear
+# OBHAU <- dbGetQuery(con.nova, "select * from OBDBS.OBHAU where negear in('050','051','052','053','054','056','057','058','170','370')")
+# ASMHAU <- dbGetQuery(con.nova, "select * from OBDBS.ASMHAU where negear in('050','051','052','053','054','056','057','058','170','370')")
 
 #ASM and 
 OBSPP <- dbGetQuery(con.nova, "select * from OBDBS.OBSPP")
@@ -276,8 +276,8 @@ ASM_OB_CATCH_SUB_edit_cf <- ASM_OB_CATCH_SUB %>% dplyr::select(-SPECIES_ITIS) %>
 #Will be zero for hauls without BSB
 #changed hail column because no unit conversion
 ASM_OB_CATCH_SUB_edit_sum <- ASM_OB_CATCH_SUB_edit_cf %>%
-  mutate(BSB_KEPTWT = case_when(SPECIES_ITIS==	'167688' & CATDISP == '1' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
-         BSB_DISCARDTWT = case_when(SPECIES_ITIS==	'167688' & CATDISP == '0' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
+  mutate(BSB_KEPTWT = case_when(SPECIES_ITIS==	'167687' & CATDISP == '1' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
+         BSB_DISCARDTWT = case_when(SPECIES_ITIS==	'167687' & CATDISP == '0' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
          SUM_BSB_CATCH = BSB_KEPTWT + BSB_DISCARDTWT)
 
 #Adding a trip total  
@@ -346,8 +346,8 @@ pulled_data_edit_cf <- pulled_data_edit %>%
 #Will be zero for hauls without Atl BSB
 #changed hail column because no unit coversion
 pulled_data_cf_sum <-pulled_data_edit_cf %>%
-  mutate(BSB_KEPTWT = case_when(SPECIES_ITIS==	'167688' & DISPOSITION_CODE == '011' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
-         BSB_DISCARDTWT = case_when(SPECIES_ITIS==	'167688' & DISPOSITION_CODE == '100' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
+  mutate(BSB_KEPTWT = case_when(SPECIES_ITIS==	'167687' & DISPOSITION_CODE == '011' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
+         BSB_DISCARDTWT = case_when(SPECIES_ITIS==	'167687' & DISPOSITION_CODE == '100' ~ HAIL_AMOUNT_LB,TRUE ~ 0),
          SUM_BSB_CATCH = BSB_KEPTWT + BSB_DISCARDTWT)
 
 #Adding a trip total  
@@ -494,11 +494,23 @@ plot_data_comb <- rbind(plot_data_single_rec,plot_data_more_rec)
 
 ```
 
-##Adding the wide catch elements
+# Looking at what we've brought together
+
+```{r}
+library(skimr)
+plot_data_comb %>% skim()
+
+plot_data_comb %>% .$SUM_BSB_CATCH %>% skim()
+
+plot_data_comb %>% filter(SUM_BSB_CATCH>0) %>% skim()
+
+```
+
+
+##Looking at the number of 
 
 ```{r}
 ##Adding vessel info
-#Adding vessel info
 plot_data_comb_ves_1 <- plot_data_comb %>% filter(!is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% ungroup() %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% distinct() %>% group_by(VP_NUM,AP_YEAR) %>% slice(1) %>% ungroup(),by=c("permit"="VP_NUM","YEAR"="AP_YEAR"))
 
 plot_data_comb_ves_2 <- plot_data_comb %>% filter(is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% ungroup(), by=c("hull_num"="HULL_ID","YEAR"="AP_YEAR"))
@@ -507,17 +519,51 @@ plot_data_comb_ves_2 <- plot_data_comb %>% filter(is.na(permit)) %>% left_join(.
 #bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(is.na(mesh_size)) %>% group_by(source,gear_code_vtr,mesh_size) %>% count()
 
 #Actually writing a data file
-#write_rds(bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2),'BSB_sf_ob_v3.rds')
+write_rds(bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2),'C:/Users/andrew.jones/Desktop/BSB_sf_ob_v1.rds')
+
+bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% .$SUM_BSB_CATCH %>% qplot()
+
+bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% .$SUM_BSB_CATCH %>% 
+
+plot_data_comb %>% dplyr::select(trip_id,SUM_BSB_CATCH) %>% inner_join(.,bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% dplyr::select(trip_id,SUM_BSB_CATCH_v2=SUM_BSB_CATCH),by='trip_id') %>% sample_frac(0.1)+ ggplot(aes(x=SUM_BSB_CATCH,y=SUM_BSB_CATCH_v2)) + geom_point()
 
 ```
 
 ```{r}
 #plotting things out just to see where the records are from
-ggplot() + 
-  stat_summary_2d(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0),
-                  aes(y=end_lat,x=end_lon,z=log(SUM_BSB_CATCH+1)),
-                  fun="mean",na.rm = FALSE,binwidth = c(0.08333,0.08333),alpha=0.75) +
-  facet_wrap(~source)
+a <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(gear_code_vtr,source,YEAR) %>% tally() %>%
+             ungroup() %>%
+             mutate(gear_code_trim=fct_lump(gear_code_vtr,5)),
+                  aes(x=YEAR,y=n,fill=gear_code_trim),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by gear type',subtitle = 'Number of records',x='Year',y='Count') +
+  theme(legend.position = "none")
+
+b <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             mutate(gear_code_trim=fct_lump(gear_code_vtr,5)),
+                  aes(x=YEAR,fill=gear_code_trim),
+                  position = "fill") +
+  facet_wrap(~source) +   scale_y_continuous(labels = scales::percent) +
+  labs(title='BSB catch in SF/OB by gear type',subtitle = 'Number of records as percent',x='Year',y='Percent') +
+  theme(legend.position = "none")
+
+c <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(gear_code_vtr,source,YEAR) %>% summarise(BSB_sum=sum(SUM_BSB_CATCH,na.rm=TRUE)) %>%
+             ungroup() %>%
+             mutate(gear_code_trim=fct_lump(gear_code_vtr,5)),
+                  aes(x=YEAR,y=BSB_sum,fill=gear_code_trim),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by gear type',subtitle = 'Weight summary (lbs)',x='Year',y='Percent',fill='Gear code')
+
+library(patchwork)
+
+a + b + c
 
 ```
 
