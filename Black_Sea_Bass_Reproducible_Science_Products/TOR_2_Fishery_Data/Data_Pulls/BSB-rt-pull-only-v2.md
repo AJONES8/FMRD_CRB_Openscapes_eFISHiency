@@ -12,9 +12,6 @@ Fleet database to find information that is available. Here all gears are
 brought in. The focus is on pulling information that could be useful for
 a CPUE estimate for black seabass.
 
-\[Black Sea Bass\]
-(<https://media.fisheries.noaa.gov/styles/original/s3/dam-migration/640x427-black-sea-bass.png?itok=7Ax8suz_>)
-
 # Setting global options
 
 # Loading packages
