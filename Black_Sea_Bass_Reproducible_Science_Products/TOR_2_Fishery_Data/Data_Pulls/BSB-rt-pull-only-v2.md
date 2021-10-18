@@ -1,4 +1,4 @@
-BSB\_pull\_only
+Study Fleet and Observer Data Pull for Black Sea Bass
 ================
 Andy Jones
 10/13/2021
@@ -464,11 +464,12 @@ ASM_OB_CATCH_SUB_edit_sum_sum_sub <- ASM_OB_CATCH_SUB_edit_sum_sum_sub %>% left_
 combined_data <- rbind(pulled_data_cf_sum_sum_sub,ASM_OB_CATCH_SUB_edit_sum_sum_sub) %>% mutate(haul_num=as.numeric(haul_num))
 ```
 
-\#\#Data polishing 2 (inspecting and weeding out co-sampled trips)
+# Data polishing 2 (inspecting and weeding out co-sampled trips)
+
 Matching observer and cooperative research trips by permit and date,
 then comparing the total catch of BSB on a given trip between the two
 data sources. Need to make sure the observer trips without a permit
-number get accounted for too. Needs imporvement.
+number get accounted for too. Needs improvement.
 
 ``` r
 #Making a polished data frame (pulling out some records with extreme values)
@@ -493,6 +494,93 @@ plot_data_more_rec <- plot_data %>% filter(TRIP_COUNT > 1) %>% group_by(permit,D
 plot_data_comb <- rbind(plot_data_single_rec,plot_data_more_rec)
 ```
 
+# Making the target data similarly coded
+
+``` r
+#Converting the observer data target species
+plot_data_comb_obs <- plot_data_comb %>% filter(source=='obs')
+
+#Converting the target species to NESPP4
+target_NESPP4 <- c("5240","0818","4657","1230","5260","8009","1551",
+                   "1477","7270","2120","2695","1219","1200","8010",
+                   "7240","8020","3650","3295","3521","4180","1685",
+                   "3350","5090","0124","7350","3650","0230","2210",
+                   "4470","4328","7140")
+
+crpp_target <- crpp_trip_dd %>% 
+  dplyr::select(TRIP_ID,DD_ELEMENT_NAME,DD_ELEMENT_VALUE) %>%
+              filter(DD_ELEMENT_NAME=='TARGET SPECIES') %>% 
+  dplyr::select(DD_ELEMENT_VALUE) %>% distinct() %>%
+  cbind(.,target_NESPP4)
+
+#Adding value
+plot_data_comb_crb <- plot_data_comb %>% filter(source=='crb') %>% 
+  left_join(.,crpp_target,by=c('target'='DD_ELEMENT_VALUE')) %>%
+  dplyr::select(-target) %>% dplyr::rename(target=target_NESPP4)
+
+#Putting things together and adding consistent common names
+plot_data_comb_trgt <- rbind(plot_data_comb_crb,plot_data_comb_obs) %>% #filter(is.na(target)) %>%
+  left_join(.,OBSPEC %>% dplyr::select(NESPP4,COMNAME),by=c('target'='NESPP4')) %>%
+  dplyr::select(-target) %>% dplyr::rename(target=COMNAME) #%>%
+  #group_by(target) %>% tally() %>% arrange(-n)
+
+#Looking to see if anything went wrong
+plot_data_comb_trgt %>% group_by(target) %>% tally() %>% arrange(-n)
+```
+
+    ## # A tibble: 118 x 2
+    ##    target                        n
+    ##    <chr>                     <int>
+    ##  1 SCALLOP, SEA             906507
+    ##  2 SQUID, ATL LONG-FIN       66021
+    ##  3 GROUNDFISH, NK            59240
+    ##  4 <NA>                      43581
+    ##  5 HADDOCK                   32013
+    ##  6 FLOUNDER, SUMMER (FLUKE)  31099
+    ##  7 COD, ATLANTIC             27212
+    ##  8 MONKFISH (GOOSEFISH)      26265
+    ##  9 POLLOCK                   19299
+    ## 10 FISH, NK                  19113
+    ## # ... with 108 more rows
+
+``` r
+plot_data_comb %>% group_by(target) %>% tally() %>% arrange(-n)
+```
+
+    ## # A tibble: 148 x 2
+    ##    target            n
+    ##    <chr>         <int>
+    ##  1 8009         878274
+    ##  2 <NA>          43581
+    ##  3 5240          40350
+    ##  4 LOLIGO SQUID  40136
+    ##  5 SCALLOP       28233
+    ##  6 1477          27019
+    ##  7 0818          26544
+    ##  8 8010          25885
+    ##  9 0124          23569
+    ## 10 1219          21201
+    ## # ... with 138 more rows
+
+``` r
+plot_data_comb_obs %>% group_by(target) %>% tally() %>% arrange(-n)
+```
+
+    ## # A tibble: 117 x 2
+    ##    target      n
+    ##    <chr>   <int>
+    ##  1 8009   878274
+    ##  2 5240    40350
+    ##  3 1477    27019
+    ##  4 0818    26544
+    ##  5 8010    25885
+    ##  6 0124    23569
+    ##  7 1219    21201
+    ##  8 2695    18302
+    ##  9 7270    17249
+    ## 10 5260    17031
+    ## # ... with 107 more rows
+
 # Adding vessel information
 
 This come from GARFO and is messy. Each vessel has an entry per year in
@@ -500,18 +588,21 @@ the VPS vessels table. Need to run past Ben and co.
 
 ``` r
 ##Adding vessel info
-plot_data_comb_ves_1 <- plot_data_comb %>% filter(!is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% ungroup() %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% distinct() %>% group_by(VP_NUM,AP_YEAR) %>% slice(1) %>% ungroup(),by=c("permit"="VP_NUM","YEAR"="AP_YEAR"))
+plot_data_comb_ves_1 <- plot_data_comb_trgt %>% filter(!is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% ungroup() %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% distinct() %>% group_by(VP_NUM,AP_YEAR) %>% slice(1) %>% ungroup(),by=c("permit"="VP_NUM","YEAR"="AP_YEAR"))
 
-plot_data_comb_ves_2 <- plot_data_comb %>% filter(is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% ungroup(), by=c("hull_num"="HULL_ID","YEAR"="AP_YEAR"))
+plot_data_comb_ves_2 <- plot_data_comb_trgt %>% filter(is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% ungroup(), by=c("hull_num"="HULL_ID","YEAR"="AP_YEAR"))
 
 #Actually writing a data file
-#write_rds(bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2),'C:/Users/andrew.jones/Desktop/BSB_sf_ob_v1.rds')
+#write_rds(bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2),'C:/Users/andrew.jones/Desktop/BSB_sf_ob_v2.rds')
+BSB_sf_ob_v1 <- read_rds('C:/Users/andrew.jones/Desktop/BSB_sf_ob_v1.rds')
 ```
 
 # Making plots of the data we’ve brought together
 
+First looking at the gears used to capture black sea bass.
+
 ``` r
-#plotting things out just to see where the records are from
+#plotting things out just to see what gears the records are from
 a <- ggplot() + 
   geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
              group_by(gear_code_vtr,source,YEAR) %>% tally() %>%
@@ -547,4 +638,48 @@ library(patchwork)
 a + b + c
 ```
 
-![](Figs/unnamed-chunk-3-1.png)<!-- -->
+![](Figs/unnamed-chunk-4-1.png)<!-- -->
+
+# Making more plots of the data we’ve brought together
+
+Second looking at the target species used to capture black sea bass.
+
+``` r
+#plotting things out just to see where the records are from
+a <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(target,source,YEAR) %>% tally() %>%
+             ungroup() %>%
+             group_by(source) %>%
+             mutate(target=fct_lump(target,8)),
+                  aes(x=YEAR,y=n,fill=target),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by target species',subtitle = 'Number of records',x='Year',y='Count') +
+  theme(legend.position = "none")
+
+b <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             mutate(target=fct_lump(target,8)),
+                  aes(x=YEAR,fill=target),
+                  position = "fill") +
+  facet_wrap(~source) +   scale_y_continuous(labels = scales::percent) +
+  labs(title='BSB catch in SF/OB by target species',subtitle = 'Number of records as percent',x='Year',y='Percent') +
+  theme(legend.position = "none")
+
+c <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(target,source,YEAR) %>% summarise(BSB_sum=sum(SUM_BSB_CATCH,na.rm=TRUE)) %>%
+             ungroup() %>%
+             mutate(target=fct_lump(target,8)),
+                  aes(x=YEAR,y=BSB_sum,fill=target),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by target species',subtitle = 'Weight summary (lbs)',x='Year',y='Percent',fill='Target species')
+
+library(patchwork)
+
+a + b + c
+```
+
+![](Figs/unnamed-chunk-5-1.png)<!-- -->

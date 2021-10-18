@@ -1,5 +1,5 @@
 ---
-title: "BSB_pull_only"
+title: "Study Fleet and Observer Data Pull for Black Sea Bass"
 author: "Andy Jones"
 date: "10/13/2021"
 output: github_document
@@ -479,8 +479,8 @@ combined_data <- rbind(pulled_data_cf_sum_sum_sub,ASM_OB_CATCH_SUB_edit_sum_sum_
 
 ```
 
-##Data polishing 2 (inspecting and weeding out co-sampled trips)
-Matching observer and cooperative research trips by permit and date, then comparing the total catch of BSB on a given trip between the two data sources. Need to make sure the observer trips without a permit number get accounted for too. Needs imporvement.
+# Data polishing 2 (inspecting and weeding out co-sampled trips)
+Matching observer and cooperative research trips by permit and date, then comparing the total catch of BSB on a given trip between the two data sources. Need to make sure the observer trips without a permit number get accounted for too. Needs improvement.
 
 ```{r}
 #Making a polished data frame (pulling out some records with extreme values)
@@ -506,24 +506,64 @@ plot_data_comb <- rbind(plot_data_single_rec,plot_data_more_rec)
 
 ```
 
+# Making the target data similarly coded
+
+```{r}
+#Converting the observer data target species
+plot_data_comb_obs <- plot_data_comb %>% filter(source=='obs')
+
+#Converting the target species to NESPP4
+target_NESPP4 <- c("5240","0818","4657","1230","5260","8009","1551",
+                   "1477","7270","2120","2695","1219","1200","8010",
+                   "7240","8020","3650","3295","3521","4180","1685",
+                   "3350","5090","0124","7350","3650","0230","2210",
+                   "4470","4328","7140")
+
+crpp_target <- crpp_trip_dd %>% 
+  dplyr::select(TRIP_ID,DD_ELEMENT_NAME,DD_ELEMENT_VALUE) %>%
+              filter(DD_ELEMENT_NAME=='TARGET SPECIES') %>% 
+  dplyr::select(DD_ELEMENT_VALUE) %>% distinct() %>%
+  cbind(.,target_NESPP4)
+
+#Adding value
+plot_data_comb_crb <- plot_data_comb %>% filter(source=='crb') %>% 
+  left_join(.,crpp_target,by=c('target'='DD_ELEMENT_VALUE')) %>%
+  dplyr::select(-target) %>% dplyr::rename(target=target_NESPP4)
+
+#Putting things together and adding consistent common names
+plot_data_comb_trgt <- rbind(plot_data_comb_crb,plot_data_comb_obs) %>% #filter(is.na(target)) %>%
+  left_join(.,OBSPEC %>% dplyr::select(NESPP4,COMNAME),by=c('target'='NESPP4')) %>%
+  dplyr::select(-target) %>% dplyr::rename(target=COMNAME) #%>%
+  #group_by(target) %>% tally() %>% arrange(-n)
+
+#Looking to see if anything went wrong
+plot_data_comb_trgt %>% group_by(target) %>% tally() %>% arrange(-n)
+plot_data_comb %>% group_by(target) %>% tally() %>% arrange(-n)
+plot_data_comb_obs %>% group_by(target) %>% tally() %>% arrange(-n)
+
+```
+
+
 # Adding vessel information
 This come from GARFO and is messy. Each vessel has an entry per year in the VPS vessels table. Need to run past Ben and co.
 
 ```{r}
 ##Adding vessel info
-plot_data_comb_ves_1 <- plot_data_comb %>% filter(!is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% ungroup() %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% distinct() %>% group_by(VP_NUM,AP_YEAR) %>% slice(1) %>% ungroup(),by=c("permit"="VP_NUM","YEAR"="AP_YEAR"))
+plot_data_comb_ves_1 <- plot_data_comb_trgt %>% filter(!is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% ungroup() %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% distinct() %>% group_by(VP_NUM,AP_YEAR) %>% slice(1) %>% ungroup(),by=c("permit"="VP_NUM","YEAR"="AP_YEAR"))
 
-plot_data_comb_ves_2 <- plot_data_comb %>% filter(is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% ungroup(), by=c("hull_num"="HULL_ID","YEAR"="AP_YEAR"))
+plot_data_comb_ves_2 <- plot_data_comb_trgt %>% filter(is.na(permit)) %>% left_join(.,vessel_info %>% mutate(VP_NUM=as.character(VP_NUM)) %>% dplyr::select(VES_NAME,AP_YEAR,VP_NUM,PPORT,GTONS,VHP) %>% ungroup(), by=c("hull_num"="HULL_ID","YEAR"="AP_YEAR"))
 
 #Actually writing a data file
-#write_rds(bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2),'C:/Users/andrew.jones/Desktop/BSB_sf_ob_v1.rds')
+#write_rds(bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2),'C:/Users/andrew.jones/Desktop/BSB_sf_ob_v2.rds')
+BSB_sf_ob_v1 <- read_rds('C:/Users/andrew.jones/Desktop/BSB_sf_ob_v1.rds')
 
 ```
 
 # Making plots of the data we've brought together
+First looking at the gears used to capture black sea bass.
 
 ```{r}
-#plotting things out just to see where the records are from
+#plotting things out just to see what gears the records are from
 a <- ggplot() + 
   geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
              group_by(gear_code_vtr,source,YEAR) %>% tally() %>%
@@ -559,5 +599,48 @@ library(patchwork)
 a + b + c
 
 ```
+
+# Making more plots of the data we've brought together
+Second looking at the target species used to capture black sea bass.
+
+```{r}
+#plotting things out just to see where the records are from
+a <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(target,source,YEAR) %>% tally() %>%
+             ungroup() %>%
+             group_by(source) %>%
+             mutate(target=fct_lump(target,8)),
+                  aes(x=YEAR,y=n,fill=target),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by target species',subtitle = 'Number of records',x='Year',y='Count') +
+  theme(legend.position = "none")
+
+b <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             mutate(target=fct_lump(target,8)),
+                  aes(x=YEAR,fill=target),
+                  position = "fill") +
+  facet_wrap(~source) +   scale_y_continuous(labels = scales::percent) +
+  labs(title='BSB catch in SF/OB by target species',subtitle = 'Number of records as percent',x='Year',y='Percent') +
+  theme(legend.position = "none")
+
+c <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(target,source,YEAR) %>% summarise(BSB_sum=sum(SUM_BSB_CATCH,na.rm=TRUE)) %>%
+             ungroup() %>%
+             mutate(target=fct_lump(target,8)),
+                  aes(x=YEAR,y=BSB_sum,fill=target),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by target species',subtitle = 'Weight summary (lbs)',x='Year',y='Percent',fill='Target species')
+
+library(patchwork)
+
+a + b + c
+
+```
+
 
 
