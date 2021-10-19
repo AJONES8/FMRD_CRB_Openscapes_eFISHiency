@@ -528,58 +528,58 @@ plot_data_comb_trgt <- rbind(plot_data_comb_crb,plot_data_comb_obs) %>% #filter(
 plot_data_comb_trgt %>% group_by(target) %>% tally() %>% arrange(-n)
 ```
 
-    ## # A tibble: 118 x 2
+    ## # A tibble: 117 x 2
     ##    target                        n
     ##    <chr>                     <int>
-    ##  1 SCALLOP, SEA             906507
-    ##  2 SQUID, ATL LONG-FIN       66021
-    ##  3 GROUNDFISH, NK            59240
-    ##  4 <NA>                      43581
-    ##  5 HADDOCK                   32013
-    ##  6 FLOUNDER, SUMMER (FLUKE)  31099
-    ##  7 COD, ATLANTIC             27212
-    ##  8 MONKFISH (GOOSEFISH)      26265
-    ##  9 POLLOCK                   19299
-    ## 10 FISH, NK                  19113
-    ## # ... with 108 more rows
+    ##  1 SCALLOP, SEA             906361
+    ##  2 SQUID, ATL LONG-FIN       66018
+    ##  3 GROUNDFISH, NK            59297
+    ##  4 <NA>                      43580
+    ##  5 HADDOCK                   31892
+    ##  6 FLOUNDER, SUMMER (FLUKE)  31104
+    ##  7 COD, ATLANTIC             27336
+    ##  8 MONKFISH (GOOSEFISH)      26261
+    ##  9 POLLOCK                   19302
+    ## 10 FISH, NK                  19132
+    ## # ... with 107 more rows
 
 ``` r
 plot_data_comb %>% group_by(target) %>% tally() %>% arrange(-n)
 ```
 
-    ## # A tibble: 148 x 2
+    ## # A tibble: 147 x 2
     ##    target            n
     ##    <chr>         <int>
-    ##  1 8009         878274
-    ##  2 <NA>          43581
-    ##  3 5240          40350
-    ##  4 LOLIGO SQUID  40136
-    ##  5 SCALLOP       28233
-    ##  6 1477          27019
-    ##  7 0818          26544
-    ##  8 8010          25885
-    ##  9 0124          23569
-    ## 10 1219          21201
-    ## # ... with 138 more rows
+    ##  1 8009         878132
+    ##  2 <NA>          43580
+    ##  3 5240          40370
+    ##  4 LOLIGO SQUID  40109
+    ##  5 SCALLOP       28229
+    ##  6 1477          26888
+    ##  7 0818          26674
+    ##  8 8010          25909
+    ##  9 0124          23558
+    ## 10 1219          21204
+    ## # ... with 137 more rows
 
 ``` r
 plot_data_comb_obs %>% group_by(target) %>% tally() %>% arrange(-n)
 ```
 
-    ## # A tibble: 117 x 2
+    ## # A tibble: 116 x 2
     ##    target      n
     ##    <chr>   <int>
-    ##  1 8009   878274
-    ##  2 5240    40350
-    ##  3 1477    27019
-    ##  4 0818    26544
-    ##  5 8010    25885
-    ##  6 0124    23569
-    ##  7 1219    21201
-    ##  8 2695    18302
-    ##  9 7270    17249
-    ## 10 5260    17031
-    ## # ... with 107 more rows
+    ##  1 8009   878132
+    ##  2 5240    40370
+    ##  3 1477    26888
+    ##  4 0818    26674
+    ##  5 8010    25909
+    ##  6 0124    23558
+    ##  7 1219    21204
+    ##  8 2695    18309
+    ##  9 7270    17225
+    ## 10 5260    17044
+    ## # ... with 106 more rows
 
 # Adding vessel information
 
@@ -650,7 +650,7 @@ a <- ggplot() +
   geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
              group_by(target,source,YEAR) %>% tally() %>%
              ungroup() %>%
-             group_by(source) %>%
+             #group_by(source) %>%
              mutate(target=fct_lump(target,8)),
                   aes(x=YEAR,y=n,fill=target),
                   stat='identity') +
@@ -683,3 +683,47 @@ a + b + c
 ```
 
 ![](Figs/unnamed-chunk-5-1.png)<!-- -->
+
+# Making more plots of the data we’ve brought together
+
+Second looking at the fishing area used to capture black sea bass.
+
+``` r
+#plotting things out just to see where the records are from
+a <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(area,source,YEAR) %>% tally() %>%
+             ungroup() %>%
+             #group_by(source) %>%
+             mutate(area=fct_lump(area,8)),
+                  aes(x=YEAR,y=n,fill=area),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by fishing area',subtitle = 'Number of records',x='Year',y='Count') +
+  theme(legend.position = "none")
+
+b <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             mutate(area=fct_lump(area,8)),
+                  aes(x=YEAR,fill=area),
+                  position = "fill") +
+  facet_wrap(~source) +   scale_y_continuous(labels = scales::percent) +
+  labs(title='BSB catch in SF/OB by fishing area',subtitle = 'Number of records as percent',x='Year',y='Percent') +
+  theme(legend.position = "none")
+
+c <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(area,source,YEAR) %>% summarise(BSB_sum=sum(SUM_BSB_CATCH,na.rm=TRUE)) %>%
+             ungroup() %>%
+             mutate(area=fct_lump(area,8)),
+                  aes(x=YEAR,y=BSB_sum,fill=area),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by fishing area',subtitle = 'Weight summary (lbs)',x='Year',y='Percent',fill='Fishing area')
+
+library(patchwork)
+
+a + b + c
+```
+
+![](Figs/unnamed-chunk-6-1.png)<!-- -->
