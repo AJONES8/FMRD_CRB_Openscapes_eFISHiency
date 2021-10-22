@@ -684,6 +684,85 @@ a + b + c
 
 ```
 
+# Making more plots of the data we've brought together
+Second looking at the target species used to capture black sea bass.
+
+```{r}
+#plotting things out just to see where the records are from
+a <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(target,source,YEAR) %>% tally() %>%
+             ungroup() %>%
+             #group_by(source) %>%
+             mutate(target=fct_lump(target,8)),
+                  aes(x=YEAR,y=n,fill=target),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by target species',subtitle = 'Number of records',x='Year',y='Count') +
+  theme(legend.position = "none")
+
+b <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             mutate(target=fct_lump(target,8)),
+                  aes(x=YEAR,fill=target),
+                  position = "fill") +
+  facet_wrap(~source) +   scale_y_continuous(labels = scales::percent) +
+  labs(title='BSB catch in SF/OB by target species',subtitle = 'Number of records as percent',x='Year',y='Percent') +
+  theme(legend.position = "none")
+
+c <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(target,source,YEAR) %>% summarise(BSB_sum=sum(SUM_BSB_CATCH,na.rm=TRUE)) %>%
+             ungroup() %>%
+             mutate(target=fct_lump(target,8)),
+                  aes(x=YEAR,y=BSB_sum,fill=target),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by target species',subtitle = 'Weight summary (lbs)',x='Year',y='Percent',fill='Target species')
+
+library(patchwork)
+
+a + b + c
+
+```
+
+# Making more plots of the data we've brought together
+Second looking at the month when black sea bass were caught.
+
+```{r}
+#plotting things out just to see where the records are from
+a <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(MONTH,source,YEAR) %>% tally(),
+                  aes(x=YEAR,y=n,fill=as.factor(MONTH)),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by fishing MONTH',subtitle = 'Number of records',x='Year',y='Count') +
+  theme(legend.position = "none")
+
+b <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0),
+                  aes(x=YEAR,fill=as.factor(MONTH)),
+                  position = "fill") +
+  facet_wrap(~source) + scale_y_continuous(labels = scales::percent) +
+  labs(title='BSB catch in SF/OB by fishing MONTH',subtitle = 'Number of records as percent',x='Year',y='Percent') +
+  theme(legend.position = "none")
+
+c <- ggplot() + 
+  geom_bar(data=bind_rows(plot_data_comb_ves_1,plot_data_comb_ves_2) %>% filter(SUM_BSB_CATCH>0) %>% 
+             group_by(MONTH,source,YEAR) %>% summarise(BSB_sum=sum(SUM_BSB_CATCH,na.rm=TRUE)) %>%
+             ungroup(),
+                  aes(x=YEAR,y=BSB_sum,fill=as.factor(MONTH)),
+                  stat='identity') +
+  facet_wrap(~source) +
+  labs(title='BSB catch in SF/OB by fishing MONTH',subtitle = 'Weight summary (lbs)',x='Year',y='Percent',fill='Fishing MONTH')
+
+library(patchwork)
+
+a + b + c
+
+```
+
 
 
 
