@@ -7,7 +7,7 @@
 
 ## Agenda ## 
 
-- Attendance: Andy, Ben, Anna, Ashley, Debie, Katie, Alex, George, Brant, Others?
+- Attendance: Andy, Ben, Anna, Ashley, Katie, Alex, Kiersten
 - Discussion of the Friday meeting.
 - Discuss the GitHub intro
 - Direction of the eFISHiency group
@@ -18,3 +18,4 @@
       - Stakeholder perspectives - question
       - Work in progress
 - Other business
+      - Discussed how best to integrate with other similar efforts at the Center/GARFO (Stock Efficiency and the EDAB EcoData package)
