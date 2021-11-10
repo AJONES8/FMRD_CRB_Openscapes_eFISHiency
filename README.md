@@ -8,9 +8,7 @@
 ## Please edit as you see fit.
 
 - [Participant list for FDD openscapes](https://docs.google.com/spreadsheets/d/1Xv-N-_PiJwbgrtxXFtRUI_-spq92ZjSylPxMKRWEqfE/edit#gid=0) 
-- [01_CallAgenda [ 2021-fdd ]](https://docs.google.com/document/d/1degvJXpLuYBhpNfo0uaVElXUu2G20SIxYoN1hbhGPfI/edit#heading=h.ypq91biaklid)
 - Seaside chat 1 summary (need to add)
-- [02_CallAgenda [ 2021-fdd ]](need to add)
 - Seaside chat 2 summary (need to add)
 - Seaside chat 3 summary (need to add)
 - Seaside chat 4 summary (need to add)
