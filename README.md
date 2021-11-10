@@ -8,10 +8,9 @@
 ## Please edit as you see fit.
 
 - [Participant list for FDD openscapes](https://docs.google.com/spreadsheets/d/1Xv-N-_PiJwbgrtxXFtRUI_-spq92ZjSylPxMKRWEqfE/edit#gid=0) 
-- Seaside chat 1 summary (need to add)
-- Seaside chat 2 summary (need to add)
-- Seaside chat 3 summary (need to add)
-- Seaside chat 4 summary (need to add)
+- Seaside chat 1 summary (https://github.com/AJONES8/FMRD_CRB_Openscapes_eFISHiency/blob/main/eFISHiency_Chat_1.md)
+- Seaside chat 2 summary (https://github.com/AJONES8/FMRD_CRB_Openscapes_eFISHiency/blob/main/eFISHiency_Chat_2.md)
+- Seaside chat 3 summary (https://github.com/AJONES8/FMRD_CRB_Openscapes_eFISHiency/blob/main/eFISHiency_Chat_3.md)
 
 ## Sea creature jokes
 
